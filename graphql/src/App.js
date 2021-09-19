@@ -2,7 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import github from './db.js';
 import {useEffect, useState, useCallback} from 'react';
-
+import RepoInfo from './RepoInfo'
 function App() {
 
   let [userName, setUserName] = useState("");
@@ -14,13 +14,15 @@ function App() {
       {
         viewer {
           name
-          repositories(first:10) {
-            nodes {
-              name
-              id
-              description
-              url
-            }
+         }
+          search(query: "Josh-Munro sort:updated-desc", type:REPOSITORY, first: 10) {
+            nodes{
+              ... on Repository {
+                name
+                description
+                id
+                url
+              }
           }
         }
       }
@@ -35,8 +37,9 @@ function App() {
     .then(response => response.json())
     .then(data => {
       const viewer = data.data.viewer;
+      const repos = data.data.search.nodes;
       setUserName(viewer.name);
-      setRepoList(viewer.repositories.nodes);
+      setRepoList(repos);
     })
     .catch(err => {
       console.log(err);
@@ -56,12 +59,7 @@ function App() {
        <ul className="list-group list-group-flush">
          {
            repoList.map((repo) => (
-             <li key={repo.id.toString()}>
-               <a href={repo.url}>
-                 {repo.name}
-               </a>
-               <p>{repo.description}</p>
-             </li>
+             <RepoInfo key={repo.id} repo={repo}/>
            ))
          }
        </ul>
